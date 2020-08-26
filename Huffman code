@@ -1,0 +1,119 @@
+#include<bits/stdc++.h>
+using namespace std;
+#include<queue>
+class Node{
+  public:
+    Node*left;
+    Node*right;
+    char ctr;
+    int cnt;
+    Node()
+    {   left=NULL;
+        right=NULL;
+        ctr='\0';
+        cnt=0;
+    }
+};
+class duo{
+	public:
+	char val;
+	int freq;
+	duo(char val,int freq)
+	{	this->val=val;
+		this->freq=freq;
+	}
+	bool operator>(const duo &d) const
+	{	return freq>d.freq;
+	}
+};
+string reduce(char ct,Node*root)
+{   if(root==NULL)
+        return "-2";
+    if(ct==root->ctr)
+       return "";
+    string str1=reduce(ct,root->left);
+    string str2=reduce(ct,root->right);
+    if(str1=="-2" && str2=="-2")
+        return str1;
+    if(str1=="-2")
+        return '1'+str2;
+    return '0'+str1;
+}
+Node*createTree(priority_queue<duo,vector<duo>,greater<duo> > &pq,Node*root)
+{	if(!pq.size())
+		return root;
+	if(!root)
+	{	duo d1=pq.top();pq.pop();
+		duo d2=pq.top();pq.pop();
+		// node1
+		Node*node1=new Node;
+		node1->cnt=d1.freq;
+		node1->ctr=d1.val;
+		//node2
+		Node*node2=new Node;
+		node2->cnt=d2.freq;
+		node2->ctr=d2.val;
+		//root node
+		Node*newNode=new Node;
+		newNode->cnt=d1.freq+d2.freq;
+		newNode->left=node1;
+		newNode->right=node2;
+		return createTree(pq,newNode);
+	}
+	else
+	{	duo d1=pq.top();pq.pop();
+		Node*node1=new Node;
+		node1->cnt=d1.freq;
+		node1->ctr=d1.val;
+		//root node
+		Node*newNode=new Node;
+		newNode->cnt=root->cnt+d1.freq;
+		newNode->left=root;
+		newNode->right=node1;
+		return createTree(pq,newNode);
+	}
+}
+void solve()
+{	string str;
+	getline(cin,str);
+	map<char,int> h1;
+	priority_queue<duo,vector<duo>,greater<duo> > pq;
+	int cnt=0;
+	for(int i=0;i<str.size();i++)
+	{	if(h1.count(str[i]))
+			cnt++;
+		h1[str[i]]++;
+	}
+	if(cnt==1||str.size()==1)
+	{	cout<<str<<" "<<8*str.size()<<endl;
+		for(int i=0;i<str.size();i++)
+			cout<<"0";
+		cout<<endl<<str<<endl;
+		return;
+	}
+	map<char,int> :: iterator it=h1.begin();
+	while(it!=h1.end())
+	{	pq.push({it->first,it->second});
+		it++;
+	}
+	Node*root=createTree(pq,NULL);
+	string s="";
+	map<string,char> h;
+	for(int i=0;i<str.size();i++)
+	{	string temp=reduce(str[i],root);//<<endl;
+		h[temp]=str[i];
+		s+=temp;
+	}	
+	cout<<"Original String and size------------/*<<str<<*/ "<<8*str.size()<<endl;
+	cout<<"Compressed string and size----------"<<s<<" "<<s.size()<<endl;
+	int si=0;
+	for(int i=0;i<s.size();i++)
+	{	if(h.count(s.substr(si,i-si+1)))
+		{	cout<<h[s.substr(si,i-si+1)];			
+			si=i+1;
+		}
+	}
+}
+int main() {
+	solve();
+}
